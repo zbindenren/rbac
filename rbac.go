@@ -18,7 +18,7 @@ var (
 // Authorize is a http.HandlerFunc wrapper that checks if one of the
 // current roles matches with a role in allowedRoles.
 // The current roles are extracted from the http.Request by RoleGetter.
-func Authorize(fn http.HandlerFunc, allowedRoles ...string) http.HandlerFunc {
+func Authorize(h http.Handler, allowedRoles ...string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		allowed := false
 		roles, err := roleGetter.GetRoles(r)
@@ -39,7 +39,7 @@ func Authorize(fn http.HandlerFunc, allowedRoles ...string) http.HandlerFunc {
 			http.Error(w, "not authorized", http.StatusUnauthorized)
 			return
 		}
-		fn(w, r)
+		h.ServeHTTP(w, r)
 	}
 }
 
@@ -89,14 +89,14 @@ func (rg BasicAuthRoleGetter) GetRoles(r *http.Request) ([]string, error) {
 // TestRoleGetter is a RoleGetter which should only used for testing
 // purposes.
 type TestRoleGetter struct {
-	roles []string
+	Roles []string
 }
 
 // GetRoles returns the roles from TestRoleGetter. If list is empty
 // an error is returned.
 func (rg TestRoleGetter) GetRoles(r *http.Request) ([]string, error) {
-	if len(rg.roles) == 0 {
+	if len(rg.Roles) == 0 {
 		return []string{}, errors.New("role getter failed to get roles")
 	}
-	return rg.roles, nil
+	return rg.Roles, nil
 }

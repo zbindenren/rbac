@@ -28,7 +28,7 @@ func TestAuthorize(t *testing.T) {
 
 	for _, test := range tests {
 		w := httptest.NewRecorder()
-		sec := Authorize(helloHandler, test.allowedRoles...)
+		sec := Authorize(http.HandlerFunc(helloHandler), test.allowedRoles...)
 		sec(w, req)
 		if w.Code != test.statusCode {
 			t.Errorf("for roles '%s' got status code %d, wanted %d", strings.Join(test.allowedRoles, ", "), w.Code, test.statusCode)
@@ -40,7 +40,7 @@ func TestErrorAuthorize(t *testing.T) {
 	SetRoleGetter(TestRoleGetter{}) // this role getter returns error
 	req, _ := http.NewRequest("GET", "", nil)
 	w := httptest.NewRecorder()
-	sec := Authorize(helloHandler, "admin")
+	sec := Authorize(http.HandlerFunc(helloHandler), "admin")
 	sec(w, req)
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("got status code %d, wanted %d", w.Code, http.StatusInternalServerError)
